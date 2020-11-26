@@ -24,15 +24,15 @@ realNewsVerif = realNews(sepRealNews:sizeRealNews,:);
 newsTrain = [fakeNewsTrain ; realNewsTrain];
 newsVerif = [fakeNewsVerif ; realNewsVerif];
 
-bagRealTitle = bagOfWords(preprocessText(cell2mat(table2array(realNewsTrain(:, 1))')))
-bagFakeTitle = bagOfWords(preprocessText(cell2mat(table2array(realNewsTrain(:, 1))')))
-bagRealCorps = bagOfWords(preprocessText(cell2mat(table2array(realNews(:, 2))')))
-bagFakeCorps = bagOfWords(preprocessText(cell2mat(table2array(realNews(:, 2))')))
+bagRealTitle = removeInfrequentWords(bagOfWords(preprocessText(cell2mat(table2array(realNewsTrain(:, 1))'))),2);
+bagFakeTitle = removeInfrequentWords(bagOfWords(preprocessText(cell2mat(table2array(fakeNewsTrain(:, 1))'))),2);
+bagRealCorps = removeInfrequentWords(bagOfWords(preprocessText(cell2mat(table2array(realNewsTrain(:, 2))'))),3);
+bagFakeCorps = removeInfrequentWords(bagOfWords(preprocessText(cell2mat(table2array(fakeNewsTrain(:, 2))'))),3);
 
 %wordcloud(preprocessText(cell2mat(table2array(fakeNews(:, 2))')), 'MaxDisplayWords', 50)
 %wordcloud(preprocessText(cell2mat(table2array(realNews(:, 2))')), 'MaxDisplayWords', 50)
 
-
+mdlTitre = fitcecoc(XTrain,YTrain,'Learners','linear')
 
 
 

@@ -1,8 +1,3 @@
-clear all;
-clc;
-
-fracTrain = 0.8; %the fraction used for training, other will be used for validating
-
 realNews = readtable('True.xlsx', 'range', 'A:B');
 fakeNews = readtable('Fake.xlsx', 'range', 'A:B');
 sizeFakeNews=int16(size(fakeNews, 1));
@@ -13,27 +8,32 @@ fakeNews = [fakeNews array2table(zeros(sizeFakeNews, 1))];
 fakeNews = fakeNews(randperm(sizeFakeNews), :); %random permutation, shuffle all rows to be sure test & verif dataset arent different
 realNews = realNews(randperm(sizeRealNews), :);
 
-sepFakeNews = int16(sizeFakeNews*fracTrain);
-sepRealNews = int16(sizeRealNews*fracTrain);
+news = [realNews ; fakeNews];
+news.Var1 = categorical(news.Var1);
+cvp = cvpartition(news.Var1,'Holdout',0.1);
+dataTrain = news(cvp.training,:);
+dataTest = news(cvp.test,:);
 
-fakeNewsTrain = fakeNews(1:sepFakeNews,:);
-fakeNewsVerif = fakeNews(sepFakeNews:sizeFakeNews,:);
-realNewsTrain = realNews(1:sepRealNews,:);
-realNewsVerif = realNews(sepRealNews:sizeRealNews,:);
+textDataTrain = dataTrain.text;
+textDataTest = dataTest.text;
+YTrain = dataTrain.Var1;
+YTest = dataTest.Var1;
 
-newsTrain = [fakeNewsTrain ; realNewsTrain];
-newsVerif = [fakeNewsVerif ; realNewsVerif];
+documents = preprocessText(textDataTrain);
 
-bagTitle = removeInfrequentWords(bagOfWords(preprocessText(cell2mat(table2array(newsTrain(:, 1))'))),2);
+bag = bagOfWords(documents);
+bag = removeInfrequentWords(bag,2);
+[bag,idx] = removeEmptyDocuments(bag);
+YTrain(idx) = [];
 
-%wordcloud(preprocessText(cell2mat(table2array(fakeNews(:, 2))')), 'MaxDisplayWords', 50)
-%wordcloud(preprocessText(cell2mat(table2array(realNews(:, 2))')), 'MaxDisplayWords', 50)
+XTrain = bag.Counts;
+mdl = fitcecoc(XTrain,YTrain,'Learners','linear');
 
-mdlTitre = fitcecoc(bagTitle.Counts,table2array(newsTrain(:, 3)),'Learners','linear')
+documentsTest = preprocessText(textDataTest);
+XTest = encode(bag,documentsTest);
 
-
-
-
+YPred = predict(mdl,XTest);
+acc = sum(YPred == YTest)/numel(YTest)
 
 function documents = preprocessText(textData)
 

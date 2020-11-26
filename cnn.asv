@@ -1,38 +1,28 @@
-clear all;
-clc;
-
-fracTrain = 0.8; %the fraction used for training, other will be used for validating
-
 realNews = readtable('True.xlsx', 'range', 'A:B');
 fakeNews = readtable('Fake.xlsx', 'range', 'A:B');
 sizeFakeNews=int16(size(fakeNews, 1));
 sizeRealNews=int16(size(realNews, 1));
 
-realNews = [realNews array2table(ones(sizeRealNews, 1))]; %fill with either O or 1 if its fake or not
-fakeNews = [fakeNews array2table(zeros(sizeFakeNews, 1))];
+realNews = [realNews array2table(ones(sizeRealNews, 2))]; %fill with either O or 1 if its fake or not
+fakeNews = [fakeNews array2table(zeros(sizeFakeNews, 2))];
 fakeNews = fakeNews(randperm(sizeFakeNews), :); %random permutation, shuffle all rows to be sure test & verif dataset arent different
 realNews = realNews(randperm(sizeRealNews), :);
 
-sepFakeNews = int16(sizeFakeNews*fracTrain);
-sepRealNews = int16(sizeRealNews*fracTrain);
+news = [realNews ; fakeNews];
 
-fakeNewsTrain = fakeNews(1:sepFakeNews,:);
-fakeNewsVerif = fakeNews(sepFakeNews:sizeFakeNews,:);
-realNewsTrain = realNews(1:sepRealNews,:);
-realNewsVerif = realNews(sepRealNews:sizeRealNews,:);
+news.Var1 = categorical(news.Var1);
+cvp = cvpartition(news.Var1,'Holdout',0.1);
+dataTrain = news(cvp.training,:);
+dataValidation = news(cvp.test,:);
 
-newsTrain = [fakeNewsTrain ; realNewsTrain];
-newsVerif = [fakeNewsVerif ; realNewsVerif];
+textDataTrain = dataTrain.title;
+textDataValidation = dataValidation.title;
+YTrain = dataTrain.Var1;
+YValidation = dataValidation.Var1;
 
-bagTitle = removeInfrequentWords(bagOfWords(preprocessText(cell2mat(table2array(newsTrain(:, 1))'))),2);
-
-%wordcloud(preprocessText(cell2mat(table2array(fakeNews(:, 2))')), 'MaxDisplayWords', 50)
-%wordcloud(preprocessText(cell2mat(table2array(realNews(:, 2))')), 'MaxDisplayWords', 50)
-
-mdlTitre = fitcecoc(bagTitle.Counts,table2array(newsTrain(:, 3)),'Learners','linear')
-
-
-
+documentsTrain = preprocessText(textDataTrain);
+documentsValidation = preprocessText(textDataValidation);
+enc = wordEncoding(documentsTrain);
 
 
 function documents = preprocessText(textData)
@@ -55,3 +45,4 @@ function documents = preprocessText(textData)
     documents = removeLongWords(documents,15);
 
 end
+
