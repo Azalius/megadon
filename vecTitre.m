@@ -14,8 +14,8 @@ cvp = cvpartition(news.Var1,'Holdout',0.1);
 dataTrain = news(cvp.training,:);
 dataTest = news(cvp.test,:);
 
-textDataTrain = dataTrain.text;
-textDataTest = dataTest.text;
+textDataTrain = dataTrain.title;
+textDataTest = dataTest.title;
 YTrain = dataTrain.Var1;
 YTest = dataTest.Var1;
 
@@ -34,6 +34,7 @@ XTest = encode(bag,documentsTest);
 
 YPred = predict(mdl,XTest);
 acc = sum(YPred == YTest)/numel(YTest)
+
 
 function documents = preprocessText(textData)
 
