@@ -1,5 +1,5 @@
 function documents = preprocessText(textData)
-
+    %permet de preprocess un ou des documents 
   
     documents = tokenizedDocument(textData);
 
