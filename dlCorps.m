@@ -24,7 +24,7 @@ documentsTrain = preprocessText(textDataTrain);
 documentsValidation = preprocessText(textDataValidation);
 enc = wordEncoding(documentsTrain);
 
-sequenceLength = 500;
+sequenceLength = 500; %rarement plus de 500 mots
 XTrain = doc2sequence(enc,documentsTrain,'Length',sequenceLength);
 
 XValidation = doc2sequence(enc,documentsValidation,'Length',sequenceLength);
@@ -54,25 +54,4 @@ options = trainingOptions('adam', ...
     'Verbose',false);
 
 net = trainNetwork(XTrain,YTrain,layers,options);
-
-function documents = preprocessText(textData)
-
-    % Tokenize the text.
-    documents = tokenizedDocument(textData);
-
-    % Remove a list of stop words then lemmatize the words. To improve
-    % lemmatization, first use addPartOfSpeechDetails.
-    documents = addPartOfSpeechDetails(documents);
-    documents = removeStopWords(documents);
-    documents = normalizeWords(documents,'Style','lemma');
-
-    % Erase punctuation.
-    documents = erasePunctuation(documents);
-
-    % Remove words with 2 or fewer characters, and words with 15 or more
-    % characters.
-    documents = removeShortWords(documents,2);
-    documents = removeLongWords(documents,15);
-
-end
 
